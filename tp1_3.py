@@ -1,47 +1,56 @@
 
 from collections.abc import Sequence
 
+# algoritmo propuesto:
+# OPT(0) = 0
+# OPT(1) = altura de la primer caja
+# OPT(i) = altura maxima de una torre cuya caja superior es i
+# OPT(i+1) = si la caja i+1 puede apilarse OPT(i) + altura de la caja i+1
+
+# OPT(0) = 0
+# OPT(1) = y_1
+# OPT(i) = altura máxima de una pila cuya caja superior es i
+# OPT(i) = y_i + max( OPT(j) tal que x_j < x_i y z_j < z_i )
 def main(cajas: Sequence[tuple[float, float, float]]) -> tuple[float, list[tuple[int, tuple[float, float]]]]:
-    # solucion por programacion dinamica
-    # pila_mas_alta[1] = mejor_caja_no_apilada
-    # pila_mas_alta[n] = pila_mas_alta[n-1] + mejor_caja_no_apilada
 
-    n = len(cajas)
+    print(cajas)
 
-    orientaciones = []
-    for i, (x, y, z) in enumerate(cajas):
-        orientaciones.append((i, x, z, y))  # base (x,z), altura y
+    # guardamos índices originales
+    indices_cajas = [(indice, caja) for indice, caja in enumerate(cajas)]
 
-    orientaciones.sort(key=lambda c: (c[1] * c[2]), reverse=True)
+    # ordenar por base
+    indices_cajas.sort(key=lambda indice_caja: (indice_caja[1][0], indice_caja[1][2]))  # (x, z)
 
-    dp = [0] * n
-    parent = [-1] * n
+    n = len(indices_cajas)
 
-    for i in range(n):
-        dp[i] = orientaciones[i][3]
+    dp = [0.0] * n
+    indice_caja_superior_anterior = [-1] * n
 
     for i in range(n):
-        idx_i, bx_i, by_i, h_i = orientaciones[i]
+        _, (x_i, y_i, z_i) = indices_cajas[i]
+        dp[i] = y_i
+
+    for i in range(n):
+        indice_i, (x_i, y_i, z_i) = indices_cajas[i]
 
         for j in range(i):
-            idx_j, bx_j, by_j, h_j = orientaciones[j]
+            indice_j, (x_j, y_j, z_j) = indices_cajas[j]
 
-            if bx_i < bx_j and by_i < by_j:
-                if dp[j] + h_i > dp[i]:
-                    dp[i] = dp[j] + h_i
-                    parent[i] = j
+            if x_j < x_i and z_j < z_i:
+                if dp[j] + y_i > dp[i]:
+                    dp[i] = dp[j] + y_i
+                    indice_caja_superior_anterior[i] = j
 
-    max_index = max(range(n), key=lambda i: dp[i])
-    max_height = dp[max_index]
+    # índice de la mejor torre
+    mejor_caso = max(range(n), key=lambda i: dp[i])
+    altura_maxima = dp[mejor_caso]
 
-    torre = []
-    i = max_index
-
+    # reconstruccion
+    pila = []
+    i = mejor_caso
     while i != -1:
-        idx, bx, by, h = orientaciones[i]
-        torre.append((idx, (bx, by)))
-        i = parent[i]
+        indice, (x, y, z) = indices_cajas[i]
+        pila.append((indice, (x, z)))
+        i = indice_caja_superior_anterior[i]
 
-    torre.reverse()
-
-    return max_height, torre
+    return altura_maxima, pila
