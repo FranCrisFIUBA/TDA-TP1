@@ -18,7 +18,7 @@ def main(cajas: Sequence[tuple[float, float, float]]) -> tuple[float, list[tuple
 
     # temporal: O(n)
     # espacial: O(n)
-    memo = [0.0] * n
+    opt = [0.0] * n
 
     # temporal: O(n)
     # espacial: O(n)
@@ -27,7 +27,7 @@ def main(cajas: Sequence[tuple[float, float, float]]) -> tuple[float, list[tuple
     # temporal: O(n)
     for i in range(n):
         _, (x_i, y_i, z_i) = indices_cajas[i]
-        memo[i] = y_i
+        opt[i] = y_i
 
     # temporal: O(n^2)
     for i in range(n):
@@ -37,13 +37,13 @@ def main(cajas: Sequence[tuple[float, float, float]]) -> tuple[float, list[tuple
             indice_j, (x_j, y_j, z_j) = indices_cajas[j]
 
             if x_j < x_i and z_j < z_i:
-                if memo[j] + y_i > memo[i]:
-                    memo[i] = memo[j] + y_i
+                if opt[j] + y_i > opt[i]:
+                    opt[i] = opt[j] + y_i
                     indice_caja_superior_anterior[i] = j
 
     # índice de la mejor torre
-    mejor_caso = max(range(n), key=lambda i: memo[i])
-    altura_maxima = memo[mejor_caso]
+    mejor_caso = max(range(n), key=lambda i: opt[i])
+    altura_maxima = opt[mejor_caso]
 
     # reconstruccion
     pila = []
